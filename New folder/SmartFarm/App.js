@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { Image, StyleSheet, Platform, View, Text } from "react-native";
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
+import React, { useState, useEffect } from "react";
+import { Image, StyleSheet, Platform, ScrollView, View, Text, SafeAreaView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Switch } from "react-native-switch";
 import Slider from "@react-native-community/slider";
@@ -96,7 +94,7 @@ export default function HomeScreen() {
     setSwitchValueManual(val);
     if (val) {
       setSwitchValueAuto(false);
-      if (switchValueManual == true) handleButtonOn();
+      if (!switchValueManual) handleButtonOn();
       else handleButtonOff();
     }
   };
@@ -109,21 +107,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <>
-          <Image
-            source={require("@/assets/images/plantbackground1.jpg")}
-            style={styles.reactLogo}
-          />
-          <Image
-            source={require("@/assets/images/Rectangle 4000.png")}
-            style={styles.rectangle}
-          />
-        </>
-      }
-    >
+    <SafeAreaView style={{marginTop: 100}}>
       <View style={styles.container}>
         <View style={styles.cart}>
           <View style={styles.topCart}>
@@ -188,6 +172,7 @@ export default function HomeScreen() {
                       justifyContent: "center",
                     }}
                     renderInActiveText={false}
+                    renderActiveText={false}
                     switchLeftPx={2.6}
                     switchRightPx={2.6}
                     switchBorderRadius={30}
@@ -269,7 +254,7 @@ export default function HomeScreen() {
           )}
         </View>
       </View>
-    </ParallaxScrollView>
+    </SafeAreaView>
   );
 }
 
