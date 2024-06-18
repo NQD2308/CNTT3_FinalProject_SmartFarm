@@ -27,12 +27,19 @@ const uint16_t mqtt_port = 1883;  //Port của MQTT broker
 #define DHTPIN D5      // Define the DHT11 sensor pin
 #define DHTTYPE DHT11  // Define the sensor type
 
+String data;
+int led = 4;
+int flag = 0;
+
 DHT dht(DHTPIN, DHTTYPE);
 SoftwareSerial bluetooth(RX_PIN, TX_PIN);
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 StaticJsonDocument<256> doc;  //PubSubClient limits the message size to 256 bytes (including header)
+
+unsigned long previousMillis = 0;
+const long interval = 5000;
 
 char engine[32] = "on";
 void setup() {
@@ -77,7 +84,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   //chuyen doi *byte sang json
   deserializeJson(doc, payload, length);
   //doc thong tin status tu chuỗi json trả về
-  strlcpy(engine, doc["ariconditioner"] | "on", sizeof(engine));
+  strlcpy(engine, doc["status"] | "Off", sizeof(engine));
   String mystring(engine);
   //in ra tên của topic và nội dung nhận được từ kênh MQTT lens đã publish
   Serial.print("Message arrived [");
@@ -87,7 +94,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(engine);
 
 
-  if (mystring == "on") {  //on
+  if (mystring == "On") {  //on
     Serial.print("turn on");
     digitalWrite(D4, HIGH);
   } else {
@@ -126,6 +133,76 @@ void reconnect() {
     }
   }
 }
+
+void dataSensor() {
+  data = "read";
+  if (bluetooth.available() > 0) {
+    char c = bluetooth.read();
+    switch (c) {
+      case '1':
+        data = "on";
+        break;
+      case '0':
+        data = "off";
+        break;
+      case '2':
+        data = "read";
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (data.length() > 0) {
+    if (data == "on" || data == "1") {
+      digitalWrite(led, HIGH);
+      Serial.println("LED On");
+      //led1=on
+      bluetooth.println("on");
+      data = "";
+    } else if (data == "off" || data == "0") {
+      digitalWrite(led, LOW);
+      Serial.println("LED Off");
+      //led1=off
+      bluetooth.println("off");
+      data = "";
+    } else if (data == "read") {
+      float h = dht.readHumidity();
+      // Read temperature as Celsius (the default)
+      float t = dht.readTemperature();
+      Serial.print("Humidity: ");
+      Serial.print(h);
+      Serial.println("%");
+      Serial.print("Temperature: ");
+      Serial.print(t);
+      Serial.println("*C");
+
+      Serial.println("send data ...");
+      bluetooth.print("Humidity: ");
+      bluetooth.print(h);
+      bluetooth.print(" %\t");
+      bluetooth.print("Temperature: ");
+      bluetooth.print(t);
+      bluetooth.println(" *C");
+
+      // Đóng gói và publish dữ liệu nhiệt độ lên MQTT
+
+      doc["temp"] = t;
+      doc["humid"] = h;
+      char buffer[256];
+      size_t n = serializeJson(doc, buffer);
+      client.publish(mqtt_topic_pub_temp, buffer, n);
+
+      // Đóng gói và publish dữ liệu độ ẩm lên MQTT
+
+      doc["temp"] = t;
+      doc["humid"] = h;
+      n = serializeJson(doc, buffer);
+      client.publish(mqtt_topic_pub_humid, buffer, n);
+    }
+  }
+}
+
 void loop() {
   // kiểm tra nếu ESP8266 chưa kết nối được thì sẽ thực hiện kết nối lại
   if (!client.connected()) {
@@ -133,52 +210,15 @@ void loop() {
   }
   client.loop();
 
-  // Đọc dữ liệu từ Bluetooth
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  // Get the current time in milliseconds
+  unsigned long currentMillis = millis();
 
-  delay(1000);
+  // Check if the interval has passed
+  if (currentMillis - previousMillis >= interval) {
+    // Save the last time dataSensor was run
+    previousMillis = currentMillis;
 
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
+    // Run your dataSensor function
+    dataSensor();
   }
-
-  if (bluetooth.available()) {
-    // Send the data via Bluetooth
-    bluetooth.print("Humidity: ");
-    bluetooth.print(h);
-    bluetooth.print(" %\t");
-    bluetooth.print("Temperature: ");
-    bluetooth.print(t);
-    bluetooth.println(" *C");
-
-    // Đóng gói và publish dữ liệu nhiệt độ lên MQTT
-    doc.clear();
-    doc["temp"] = t;
-    char buffer[256];
-    size_t n = serializeJson(doc, buffer);
-    client.publish(mqtt_topic_pub_temp, buffer, n);
-
-    // Đóng gói và publish dữ liệu độ ẩm lên MQTT
-    doc.clear();
-    doc["humid"] = h;
-    n = serializeJson(doc, buffer);
-    client.publish(mqtt_topic_pub_humid, buffer, n);
-  } else {
-    Serial.println("Not connect bluetooth");
-  }
-
-  bluetooth.print("Humidity: ");
-  bluetooth.print(h);
-  bluetooth.print(" %\t");
-  bluetooth.print("Temperature: ");
-  bluetooth.print(t);
-  bluetooth.println(" *C");
-
-  Serial.print("Published temp: ");
-  Serial.println(t);
-  Serial.print("Published humid: ");
-  Serial.println(h);
 }

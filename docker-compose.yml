@@ -1,0 +1,35 @@
+version: '3.4'
+services:
+  db: 
+    image: mysql
+    container_name: thcntt3-database-test
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: thcntt
+    ports:
+      - "3308:3306"
+    volumes:
+      # Mysql
+      - thcntt3-mysql-data:/var/lib/mysql
+    networks:
+      - network-mysql-api
+  backend:
+    depends_on:
+      - db
+    networks:
+      - network-mysql-api
+    image: thcntt3-backend
+    container_name: thcntt3-backend-test
+    build:
+      context: backend
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - 5557:5555
+volumes:
+  thcntt3-mysql-data:
+    
+networks:
+  network-mysql-api:
