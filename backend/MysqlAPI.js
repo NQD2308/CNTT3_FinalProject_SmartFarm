@@ -1,17 +1,17 @@
-var express = require("express");
+var express = require('express');
 var bodyParser = require("body-parser");
-var mysql = require("mysql2");
-const cors = require("cors");
+var mysql = require('mysql2');
+const cors = require('cors');
 var app = express();
 app.use(cors());
-app.use(express.static("public"));
+app.use(express.static('public'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-// step 1: rong workbench mở cửa sổ sql và chạy lệnh
+app.use(bodyParser.urlencoded({ extended: true }))
+// step 1: trong workbench mở cửa sổ sql và chạy lệnh
 //ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password';
 //step 2:
 var con = mysql.createConnection({
-  host: "thcntt3-database-test",
+  host: "smartfarm-database-test",
   port: "3306",
   user: "root",
   password: "123456",
@@ -30,6 +30,7 @@ con.connect(function (err) {
     if (err) throw err;
     console.log(results);
   });
+
 });
 //RESTFull API
 app.get("/devices", function (req, res) {
@@ -40,9 +41,15 @@ app.get("/devices", function (req, res) {
   });
 });
 app.post("/devices", function (req, res) {
-  const { name, status } = req.body;
+  const { temperature, humidity, ariconditioner } = req.body;
   var sql =
-    "insert devices(name,status) values('" + name + "','" + status + "');";
+    "insert devices(temperature,humidity,ariconditioner) values('" +
+    temperature +
+    "','" +
+    humidity +
+    "','" +
+    ariconditioner +
+    "');";
   con.query(sql, function (err, results) {
     if (err) throw err;
     res.send("add device successfully");
