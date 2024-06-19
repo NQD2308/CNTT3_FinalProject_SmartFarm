@@ -55,7 +55,7 @@ app.post("/devices", function (req, res) {
     res.send("add device successfully");
   });
 });
-var server = app.listen(5555, function () {
+var servethcnttr = app.listen(5555, function () {
   var host = server.address().address;
   var port = server.address().port;
   console.log("Example app listening at http://%s:%s", host, port);
