@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password';
 //step 2:
 var con = mysql.createConnection({
-  host: "thcntt3-database-test",
+  host: "smartfarm-database-test",
   port: "3306",
   user: "root",
   password: "123456",
@@ -48,7 +48,7 @@ app.post("/devices", function (req, res) {
     res.send("add device successfully");
   });
 });
-var server = app.listen(5555, function () {
+var servethcnttr = app.listen(5555, function () {
   var host = server.address().address;
   var port = server.address().port;
   console.log("Example app listening at http://%s:%s", host, port);

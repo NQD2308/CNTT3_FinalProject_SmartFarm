@@ -141,6 +141,9 @@ export default function HomeScreen() {
       } else {
         handleButtonOff();
       }
+    } else {
+      setSwitchValueManual(false);
+      handleButtonOff();
     }
   };
 
