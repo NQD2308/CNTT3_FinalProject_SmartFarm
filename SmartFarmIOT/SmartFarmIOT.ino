@@ -2,6 +2,7 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <SoftwareSerial.h>
+#include <ESP8266HTTPClient.h>
 #include <DHT.h>
 
 #define ssid "Nguyen 1"
@@ -28,7 +29,7 @@ const uint16_t mqtt_port = 1883;  //Port của MQTT broker
 #define DHTTYPE DHT11  // Define the sensor type
 
 String data;
-int led = 4;
+int led = D3;
 int flag = 0;
 
 DHT dht(DHTPIN, DHTTYPE);
@@ -44,6 +45,7 @@ const long interval = 5000;
 char engine[32] = "on";
 void setup() {
   pinMode(D4, OUTPUT);
+  pinMode(D3, OUTPUT);
   digitalWrite(13, HIGH);
   Serial.begin(115200);
   bluetooth.begin(9600);
@@ -185,22 +187,33 @@ void dataSensor() {
       bluetooth.print(t);
       bluetooth.println(" *C");
 
-      // Đóng gói và publish dữ liệu nhiệt độ lên MQTT
-
-      doc["temp"] = t;
-      doc["humid"] = h;
-      char buffer[256];
-      size_t n = serializeJson(doc, buffer);
-      client.publish(mqtt_topic_pub_temp, buffer, n);
-
-      // Đóng gói và publish dữ liệu độ ẩm lên MQTT
-
-      doc["temp"] = t;
-      doc["humid"] = h;
-      n = serializeJson(doc, buffer);
-      client.publish(mqtt_topic_pub_humid, buffer, n);
+      postDataToHTTP(t, h);
     }
   }
+}
+
+void postDataToHTTP(float t, float h) {
+  HTTPClient http;
+  http.begin(espClient, "http://192.168.1.14:5557/devices/1");
+  http.addHeader("Content-Type", "application/json");
+
+  doc["temperature"] = t;
+  doc["humidity"] = h;
+  char buffer[256];
+  size_t n = serializeJson(doc, buffer);
+
+  int httpResponseCode = http.PUT((uint8_t*)buffer, n);
+
+  if (httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    String response = http.getString();
+    Serial.println("Response: " + response);
+  } else {
+    Serial.print("Error on sending PUT: ");
+    Serial.println(httpResponseCode);
+  }
+  http.end();
 }
 
 void loop() {
