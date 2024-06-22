@@ -15,17 +15,17 @@ const mqttOptions = {
 };
 
 // MQTT setup
-const mqttClient = mqtt.connect(mqttOptions);
+// const mqttClient = mqtt.connect(mqttOptions);
 
 // Handle MQTT connection
-mqttClient.on("connect", function () {
-  console.log("Connected to MQTT broker");
-});
+// mqttClient.on("connect", function () {
+//   console.log("Connected to MQTT broker");
+// });
 
-// Handle MQTT errors
-mqttClient.on("error", function (err) {
-  console.log("MQTT Error: ", err);
-});
+// // Handle MQTT errors
+// mqttClient.on("error", function (err) {
+//   console.log("MQTT Error: ", err);
+// });
 
 
 
@@ -69,13 +69,6 @@ serialPort.on("open", function () {
       if (humidityMatch && temperatureMatch) {
         const humidity = humidityMatch[1];
         const temperature = temperatureMatch[1];
-
-        // Publish data to MQTT broker
-        mqttClient.publish("temp", temperature);
-        mqttClient.publish("humid", humidity);
-
-        console.log("Published temperature: " + temperature);
-        console.log("Published humidity: " + humidity);
 
         // Reset the string buffer
         str = "";

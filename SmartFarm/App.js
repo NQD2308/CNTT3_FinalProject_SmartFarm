@@ -43,13 +43,17 @@ export default function HomeScreen() {
   const [switchValueAuto, setSwitchValueAuto] = useState(false);
   const [sliderValueTemp, setSliderValueTemp] = useState(23);
 
+  // Tải lại nhiệt độ, độ ẩm mỗi 3s
   useEffect(() => {
     //step 1 connect Mqtt broker
     connect();
     // step 3 handling when message arrived
     client.onMessageArrived = onMessageArrived;
+
+    fetchData();
   }, []);
 
+  // Xử lý tự động hóa theo nhiệt độ
   useEffect(() => {
     let interval;
     if (switchValueAuto) {
@@ -63,6 +67,22 @@ export default function HomeScreen() {
     }
     return () => clearInterval(interval); // Xóa interval khi component unmount hoặc khi switchValueAuto thay đổi
   }, [switchValueAuto, tempValue, sliderValueTemp]);
+
+  //kết nối lấy nhiệt độ, độ ẩm từ url docker
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://192.168.1.14:5557/devices");
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const deviceData = data[0];
+        setTempValue(parseFloat(deviceData.temperature));
+        setHumidValue(parseFloat(deviceData.humidity));
+        setSwitchValueManual(deviceData.airconditioner === "On");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const connect = () => {
     client.connect({
@@ -106,18 +126,43 @@ export default function HomeScreen() {
     const jsondata = JSON.parse(message.payloadString);
     console.log(jsondata.message);
     setStatusLed(jsondata.status);
-    setTempValue(jsondata.temp);
-    setHumidValue(jsondata.humid);
   };
 
+  // Bật đèn thông qua MQTT và Bluetooth
   const handleButtonOn = async () => {
-    //connect();
     console.log("turn on led...");
+
+    fetch('http://192.168.1.14:3000/simpleGateway/on')
+    .then(response => {
+      if (response.ok) {
+        console.log('Successfully turned on');
+      } else {
+        console.error('Failed to turn on');
+      }
+    })
+    .catch(error => {
+      console.error('Error turning on:', error);
+    });
+
     publishTopic("On");
   };
 
+  // Tắt đèn thông qua MQTT và Bluetooth
   const handleButtonOff = async () => {
     console.log("turn off led...");
+
+    fetch('http://192.168.1.14:3000/simpleGateway/off')
+    .then(response => {
+      if (response.ok) {
+        console.log('Successfully turned off');
+      } else {
+        console.error('Failed to turn off');
+      }
+    })
+    .catch(error => {
+      console.error('Error turning off:', error);
+    });
+
     publishTopic("Off");
   };
 
