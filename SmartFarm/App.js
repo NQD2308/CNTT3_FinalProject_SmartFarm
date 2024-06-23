@@ -205,172 +205,177 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView>
-      <Text style={styles.title}>Smart Farm</Text>
-      <ScrollView 
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#009387']} // Màu sắc của loading indicator (nếu cần)
-          />
-        }
-      >
-        <View style={styles.container}>
-          <View style={styles.cart}>
-            <View style={styles.topCart}>
-              <View style={styles.titleCart}>
-                <Text style={styles.titleTextCart}>Engine 1</Text>
+    <SafeAreaView style={{ flex: 1, position: "relative"}}>
+      <View>
+        <Text style={styles.title}>Smart Farm</Text>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#009387"]} // Màu sắc của loading indicator (nếu cần)
+            />
+          }
+        >
+          <View style={styles.container}>
+            <View style={styles.cart}>
+              <View style={styles.topCart}>
+                <View style={styles.titleCart}>
+                  <Text style={styles.titleTextCart}>Engine 1</Text>
+                </View>
+                <View style={styles.optionControl}>
+                  <Picker
+                    style={styles.optionPicker}
+                    selectedValue={selectedValue}
+                    onValueChange={(itemValue, itemIndex) =>
+                      setSelectedValue(itemValue)
+                    }
+                  >
+                    <Picker.Item label="Manual" value="manual" />
+                    <Picker.Item label="Auto" value="auto" />
+                  </Picker>
+                </View>
               </View>
-              <View style={styles.optionControl}>
-                <Picker
-                  style={styles.optionPicker}
-                  selectedValue={selectedValue}
-                  onValueChange={(itemValue, itemIndex) =>
-                    setSelectedValue(itemValue)
-                  }
-                >
-                  <Picker.Item label="Manual" value="manual" />
-                  <Picker.Item label="Auto" value="auto" />
-                </Picker>
-              </View>
+              {selectedValue === "manual" ? (
+                <View style={styles.contentCart}>
+                  <View style={styles.sensorValue}>
+                    <View style={styles.sensorValueText}>
+                      <Text style={{ textAlign: "center" }}>
+                        {Math.round(tempValue)}℃
+                      </Text>
+                      <Text>Temperature</Text>
+                    </View>
+                    <View style={styles.sensorValueText}>
+                      <Text style={{ textAlign: "center" }}>
+                        {Math.round(humidValue)}%
+                      </Text>
+                      <Text>Humidity</Text>
+                    </View>
+                  </View>
+                  <View style={styles.status}>
+                    <View style={styles.leftSide}>
+                      <Text>Status</Text>
+                      <Text
+                        style={[
+                          {
+                            color: switchValueManual ? "#2D642C" : "#B13232",
+                            fontWeight: "bold",
+                          },
+                        ]}
+                      >
+                        {switchValueManual ? "On" : "Off"}
+                      </Text>
+                    </View>
+                    <View style={styles.rightSide}>
+                      <Switch
+                        value={switchValueManual}
+                        onValueChange={handleSwitchChangeManual}
+                        disabled={false}
+                        barHeight={32}
+                        circleSize={26}
+                        circleBorderActiveColor="#fff"
+                        circleBorderInactiveColor="#fff"
+                        backgroundActive={"#2D642C"}
+                        backgroundInactive={"#828282"}
+                        circleActiveColor={"#fff"}
+                        circleInActiveColor={"#fff"}
+                        changeValueImmediately={true}
+                        innerCircleStyle={{
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        renderInActiveText={false}
+                        renderActiveText={false}
+                        switchLeftPx={2.6}
+                        switchRightPx={2.6}
+                        switchBorderRadius={30}
+                      />
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.contentCart}>
+                  <View style={styles.sensorValue}>
+                    <View style={styles.sensorValueText}>
+                      <Text style={{ textAlign: "center" }}>
+                        {Math.round(tempValue)}℃
+                      </Text>
+                      <Text>Temperature</Text>
+                    </View>
+                    <View style={styles.sensorValueText}>
+                      <Text style={{ textAlign: "center" }}>
+                        {Math.round(humidValue)}%
+                      </Text>
+                      <Text>Humidity</Text>
+                    </View>
+                  </View>
+                  <View style={styles.status}>
+                    <View style={styles.leftSide}>
+                      <Text>Status</Text>
+                      <Text
+                        style={[
+                          {
+                            color: switchValueAuto ? "#2D642C" : "#B13232",
+                            fontWeight: "bold",
+                          },
+                        ]}
+                      >
+                        {switchValueAuto ? "On" : "Off"}
+                      </Text>
+                    </View>
+                    <View style={styles.rightSide}>
+                      <Switch
+                        value={switchValueAuto}
+                        onValueChange={handleSwitchChangeAuto}
+                        disabled={false}
+                        barHeight={32}
+                        circleSize={26}
+                        circleBorderActiveColor="#fff"
+                        circleBorderInactiveColor="#fff"
+                        backgroundActive={"#2D642C"}
+                        backgroundInactive={"#828282"}
+                        circleActiveColor={"#fff"}
+                        circleInActiveColor={"#fff"}
+                        changeValueImmediately={true}
+                        // changeValueImmediately={true} // if rendering inside circle, change state immediately or wait for animation to complete
+                        innerCircleStyle={{
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }} // style for inner animated circle for what you (may) be rendering inside the circle
+                        renderActiveText={false}
+                        renderInActiveText={false}
+                        switchLeftPx={2.6} // denominator for logic when sliding to TRUE position. Higher number = more space from RIGHT of the circle to END of the slider
+                        switchRightPx={2.6} // denominator for logic when sliding to FALSE position. Higher number = more space from LEFT of the circle to BEGINNING of the slider
+                        // switchWidthMultiplier={2} // multiplied by the `circleSize` prop to calculate total width of the Switch
+                        switchBorderRadius={30}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.customValue}>
+                    <Text>Temperature</Text>
+                    <Slider
+                      style={{ width: 200, height: 40 }}
+                      value={sliderValueTemp}
+                      onValueChange={(val) => setSliderValueTemp(val)}
+                      minimumValue={0}
+                      maximumValue={30}
+                      minimumTrackTintColor="#2D642C"
+                      maximumTrackTintColor="#000000"
+                      thumbTintColor="#2D642C"
+                    />
+                    <Text style={styles.tempText}>
+                      {Math.round(sliderValueTemp)}℃
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
-            {selectedValue === "manual" ? (
-              <View style={styles.contentCart}>
-                <View style={styles.sensorValue}>
-                  <View style={styles.sensorValueText}>
-                    <Text style={{ textAlign: "center" }}>
-                      {Math.round(tempValue)}℃
-                    </Text>
-                    <Text>Temperature</Text>
-                  </View>
-                  <View style={styles.sensorValueText}>
-                    <Text style={{ textAlign: "center" }}>
-                      {Math.round(humidValue)}%
-                    </Text>
-                    <Text>Humidity</Text>
-                  </View>
-                </View>
-                <View style={styles.status}>
-                  <View style={styles.leftSide}>
-                    <Text>Status</Text>
-                    <Text
-                      style={[
-                        {
-                          color: switchValueManual ? "#2D642C" : "#B13232",
-                          fontWeight: "bold",
-                        },
-                      ]}
-                    >
-                      {switchValueManual ? "On" : "Off"}
-                    </Text>
-                  </View>
-                  <View style={styles.rightSide}>
-                    <Switch
-                      value={switchValueManual}
-                      onValueChange={handleSwitchChangeManual}
-                      disabled={false}
-                      barHeight={32}
-                      circleSize={26}
-                      circleBorderActiveColor="#fff"
-                      circleBorderInactiveColor="#fff"
-                      backgroundActive={"#2D642C"}
-                      backgroundInactive={"#828282"}
-                      circleActiveColor={"#fff"}
-                      circleInActiveColor={"#fff"}
-                      changeValueImmediately={true}
-                      innerCircleStyle={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      renderInActiveText={false}
-                      renderActiveText={false}
-                      switchLeftPx={2.6}
-                      switchRightPx={2.6}
-                      switchBorderRadius={30}
-                    />
-                  </View>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.contentCart}>
-                <View style={styles.sensorValue}>
-                  <View style={styles.sensorValueText}>
-                    <Text style={{ textAlign: "center" }}>
-                      {Math.round(tempValue)}℃
-                    </Text>
-                    <Text>Temperature</Text>
-                  </View>
-                  <View style={styles.sensorValueText}>
-                    <Text style={{ textAlign: "center" }}>
-                      {Math.round(humidValue)}%
-                    </Text>
-                    <Text>Humidity</Text>
-                  </View>
-                </View>
-                <View style={styles.status}>
-                  <View style={styles.leftSide}>
-                    <Text>Status</Text>
-                    <Text
-                      style={[
-                        {
-                          color: switchValueAuto ? "#2D642C" : "#B13232",
-                          fontWeight: "bold",
-                        },
-                      ]}
-                    >
-                      {switchValueAuto ? "On" : "Off"}
-                    </Text>
-                  </View>
-                  <View style={styles.rightSide}>
-                    <Switch
-                      value={switchValueAuto}
-                      onValueChange={handleSwitchChangeAuto}
-                      disabled={false}
-                      barHeight={32}
-                      circleSize={26}
-                      circleBorderActiveColor="#fff"
-                      circleBorderInactiveColor="#fff"
-                      backgroundActive={"#2D642C"}
-                      backgroundInactive={"#828282"}
-                      circleActiveColor={"#fff"}
-                      circleInActiveColor={"#fff"}
-                      changeValueImmediately={true}
-                      // changeValueImmediately={true} // if rendering inside circle, change state immediately or wait for animation to complete
-                      innerCircleStyle={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }} // style for inner animated circle for what you (may) be rendering inside the circle
-                      renderActiveText={false}
-                      renderInActiveText={false}
-                      switchLeftPx={2.6} // denominator for logic when sliding to TRUE position. Higher number = more space from RIGHT of the circle to END of the slider
-                      switchRightPx={2.6} // denominator for logic when sliding to FALSE position. Higher number = more space from LEFT of the circle to BEGINNING of the slider
-                      // switchWidthMultiplier={2} // multiplied by the `circleSize` prop to calculate total width of the Switch
-                      switchBorderRadius={30}
-                    />
-                  </View>
-                </View>
-                <View style={styles.customValue}>
-                  <Text>Temperature</Text>
-                  <Slider
-                    style={{ width: 200, height: 40 }}
-                    value={sliderValueTemp}
-                    onValueChange={(val) => setSliderValueTemp(val)}
-                    minimumValue={0}
-                    maximumValue={30}
-                    minimumTrackTintColor="#2D642C"
-                    maximumTrackTintColor="#000000"
-                    thumbTintColor="#2D642C"
-                  />
-                  <Text style={styles.tempText}>
-                    {Math.round(sliderValueTemp)}℃
-                  </Text>
-                </View>
-              </View>
-            )}
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
+      <View style={{position: "absolute", width: "100%", bottom: 20}}>
+        <Text style={styles.bottomTitle}>THCNTT 3 - FINAL PROJECT</Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -407,17 +412,17 @@ const styles = StyleSheet.create({
   title: {
     ...Platform.select({
       android: {
-        marginTop: 30
-      }
+        marginTop: 30,
+      },
     }),
     textAlign: "center",
     fontSize: 40,
     fontWeight: "600",
     color: "#2D642C",
-    marginBottom: 40
+    marginBottom: 40,
   },
   cart: {
-    width: "100%",
+    width: "95%",
     marginTop: 10,
     marginBottom: 20,
     backgroundColor: "white",
@@ -508,5 +513,11 @@ const styles = StyleSheet.create({
   tempText: {
     flex: 1,
     textAlign: "center",
+  },
+  bottomTitle: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2D642C"
   },
 });
